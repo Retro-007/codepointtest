@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import * as React from 'react';
 import {
     Box, Collapse, IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography,
@@ -15,12 +16,16 @@ import {
 } from "./style/MasterFormStyled";
 
 import SearchTextField from './components/SearchTextField';
-import ButtonDropdown from './components/ButtonDropdown';
+// import ButtonDropdown from './components/ButtonDropdown';
 import InputTextField from './components/InputTextField';
 import DeleteModal from './components/DeleteModal';
 import Filter from './components/Filter';
 
 import welcomeFormImage from '../../assets/images/welcome-image.svg'
+import { useDispatch, useSelector } from 'react-redux';
+import { getUsers, goToPage, nextPage, prevPage, PerPageChange, sortFields } from '../../redux/reduxActions/actions';
+import { Data, FinalData, TableProps } from '../../types/interfaces';
+import { UserState } from '../../redux/reducers/reducer';
 
 const listItems = ['Religion', 'Nationality', 'Section', 'Profession', 'Designation',
     'Class Master', 'Wing'];
@@ -70,53 +75,53 @@ const formValue = [
     // },
 ]
 
-const tableValue = [
-    {
-        id: 1,
-        name: 'Hindu',
-        status: 'active',
-    },
-    {
-        id: 2,
-        name: 'Christian',
-        status: 'active',
-    },
-    {
-        id: 3,
-        name: 'Muslim',
-        status: 'inactive',
-    },
-    {
-        id: 4,
-        name: 'Sikhism',
-        status: null,
-    },
-    {
-        id: 5,
-        name: 'Buddist',
-        status: null,
-    },
-    {
-        id: 6,
-        name: 'Jainism',
-        status: null,
-    },
-    {
-        id: 7,
-        name: 'Jews',
-        status: null,
-    },
-    {
-        id: 8,
-        name: 'Chinese Tradional',
-        status: null,
-    },
-    {
-        id: 9,
-        name: 'Non-Religious',
-        status: null,
-    },
-]
+// const tableValue = [
+//     {
+//         id: 1,
+//         name: 'Hindu',
+//         status: 'active',
+//     },
+//     {
+//         id: 2,
+//         name: 'Christian',
+//         status: 'active',
+//     },
+//     {
+//         id: 3,
+//         name: 'Muslim',
+//         status: 'inactive',
+//     },
+//     {
+//         id: 4,
+//         name: 'Sikhism',
+//         status: null,
+//     },
+//     {
+//         id: 5,
+//         name: 'Buddist',
+//         status: null,
+//     },
+//     {
+//         id: 6,
+//         name: 'Jainism',
+//         status: null,
+//     },
+//     {
+//         id: 7,
+//         name: 'Jews',
+//         status: null,
+//     },
+//     {
+//         id: 8,
+//         name: 'Chinese Tradional',
+//         status: null,
+//     },
+//     {
+//         id: 9,
+//         name: 'Non-Religious',
+//         status: null,
+//     },
+// ]
 const scrollBarStyle = {
     scrollbarColor: '#D3D3D3 #EBEBEB',
     scrollbarWidth: 'thin',
@@ -134,12 +139,49 @@ const scrollBarStyle = {
 
 
 export default function MasterForm() {
+
+    const dispatch = useDispatch();
+
     const [showFormContainer, setShowFormContainer] = React.useState(true);
     const [showAddForm, setShowAddForm] = React.useState(false);
     const [isChecked, setIsChecked] = React.useState(false);
-    const [selectedForm, setSelectedForm] = React.useState(0);
-    const [tableData, setTableData] = React.useState(tableValue);
-    const [selectedItemIndex, setSelectedItemIndex] = React.useState(null);
+    const [selectedForm, setSelectedForm] = React.useState<number | null>(0);
+    const [tableData, setTableData] = React.useState<Data[] | null>(null);
+    const [selectedItemIndex, setSelectedItemIndex] = React.useState<number | null>(0);
+
+    const userState = useSelector((state: UserState) => state.user);
+
+    const { users: UserData, page, limit, orderBy, sortedBy } = userState;
+
+
+    React.useEffect(() => {
+        handleFetchTableData()
+    }, [])
+
+
+
+    React.useEffect(() => {
+        if (UserData?.data) {
+
+            const formattedData = UserData.data.map((user: Data) => {
+                return {
+                    id: user.id,
+                    name: user.first_name,
+                    email: user.email_id,
+                };
+            });
+
+            setTableData(formattedData)
+        }
+
+    }, [UserData])
+
+
+    const handleFetchTableData = async () => {
+
+
+        await dispatch(getUsers(page, limit, orderBy, sortedBy));
+    }
 
     const handleCheckboxStatus = () => {
         setIsChecked((prev) => !prev);
@@ -149,7 +191,7 @@ export default function MasterForm() {
         setShowAddForm((prev) => !prev);
     }
 
-    const handleChange = (index) => {
+    const handleChange = (index: number) => {
         if (index === selectedForm) {
             setSelectedForm(null);
             return
@@ -158,7 +200,7 @@ export default function MasterForm() {
         // setChecked((prev) => !prev);
     };
 
-    const handleButtonClick = (index) => {
+    const handleButtonClick = (index: number) => {
         setSelectedItemIndex(index);
         // window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -259,6 +301,11 @@ export default function MasterForm() {
                                         checked={isChecked}
                                         handleCheckbox={handleCheckboxStatus}
                                         data={tableData}
+                                        UserData={UserData}
+                                        page={page}
+                                        limit={limit}
+                                        orderBy={orderBy}
+                                        sortedBy={sortedBy}
                                     />
                                 </Box>
                             </Box>
@@ -331,27 +378,35 @@ export default function MasterForm() {
     )
 }
 
-const dropDowndata = [
-    {
-        name: 'Active',
-        value: 'active',
-    },
-    {
-        name: 'Inactive',
-        value: 'inactive',
-    }
-];
+// const dropDowndata = [
+//     {
+//         name: 'Active',
+//         value: 'active',
+//     },
+//     {
+//         name: 'Inactive',
+//         value: 'inactive',
+//     }
+// ];
 
-function DragableTable({ checked, handleCheckbox, data }) {
-    const [form, setForm] = React.useState(data);
+function DragableTable({ checked, handleCheckbox, data, page, limit, orderBy, sortedBy, UserData, }: TableProps) {
+
+    const dispatch = useDispatch();
+
+    const [form, setForm] = React.useState<FinalData[] | null>(null);
+
+    React.useEffect(() => setForm(data), [data])
+
+
     const draggingItem = React.useRef();
     const dragOverItem = React.useRef();
 
-    const handleStatusChange = (value, index) => {
-        let updatedForm = [...form];
-        updatedForm[index].status = value;
-        setForm(updatedForm);
-    };
+
+    // const handleStatusChange = (value, index) => {
+    //     let updatedForm = [...form];
+    //     updatedForm[index].status = value;
+    //     setForm(updatedForm);
+    // };
 
     const handleDragStart = (e, position) => {
         draggingItem.current = position;
@@ -388,11 +443,49 @@ function DragableTable({ checked, handleCheckbox, data }) {
         setForm(listCopy);
     };
 
-    const [perPageValue, setPerPageValue] = React.useState(10);
+    // const [perPageValue, setPerPageValue] = React.useState(10);
 
-    const handlePerPageChange = (event) => {
-        setPerPageValue(event.target.value);
+    const handlePerPageChange = (event: string | number) => {
+        console.log(event);
+
+        dispatch(PerPageChange(1, event, orderBy, sortedBy))
+        // setPerPageValue(event.target.value);
     };
+
+    const handlePagination = (type: string) => {
+        if (type === "next") {
+            dispatch(nextPage(UserData?.next_page_url))
+        }
+        else if (type === "prev") {
+            dispatch(prevPage(UserData?.prev_page_url))
+        }
+    }
+
+    const handleInputPageChagne = (event: number) => {
+        if (event > UserData?.last_page || event < 1) {
+            return
+        }
+        else {
+            dispatch(goToPage(event, limit, orderBy, sortedBy))
+        }
+    }
+
+    const handleClickSort = (type: string) => {
+        switch (type) {
+            case 'id':
+                dispatch(sortFields(1, limit, type, sortedBy === "asc" ? "desc" : "asc"))
+                break;
+            case 'first_name':
+                dispatch(sortFields(1, limit, type, sortedBy === "asc" ? "desc" : "asc"))
+                break;
+            case 'email':
+                dispatch(sortFields(1, limit, type, sortedBy === "asc" ? "desc" : "asc"))
+                break;
+
+            default:
+                break;
+        }
+    }
 
     return (
         <>
@@ -406,12 +499,17 @@ function DragableTable({ checked, handleCheckbox, data }) {
                     }}>
                         <TableCell></TableCell>
                         <TableCell>
-                            <MuiCheckbox
-                                checked={checked}
-                                onChange={handleCheckbox}
-                            />
+                            <Stack direction='row' alignItems='center' gap='5px' sx={{ display: 'inline-flex' }}>
+
+                                <Typography sx={{ fontSize: 13, color: '#5F5F5F', fontWeight: 500, }}>ID</Typography>
+                                <Box onClick={() => handleClickSort('id')} role='button' sx={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
+                                    <KeyboardArrowUp />
+                                    <KeyboardArrowDown sx={{ mt: '-8px' }} />
+                                </Box>
+                            </Stack>
+
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={() => handleClickSort('first_name')}>
                             <Stack direction='row' alignItems='center' gap='5px' sx={{ display: 'inline-flex' }}>
                                 <Typography sx={{ fontSize: 13, color: '#5F5F5F', fontWeight: 500, }}>Name</Typography>
                                 <Box role='button' sx={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
@@ -421,9 +519,9 @@ function DragableTable({ checked, handleCheckbox, data }) {
                             </Stack>
 
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={() => handleClickSort('email')}>
                             <Stack direction='row' alignItems='center' gap='5px' sx={{ display: 'inline-flex' }}>
-                                <Typography sx={{ fontSize: 13, color: '#5F5F5F', fontWeight: 500, }}>Status</Typography>
+                                <Typography sx={{ fontSize: 13, color: '#5F5F5F', fontWeight: 500, }}>Email</Typography>
                                 <Box role='button' sx={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}>
                                     <KeyboardArrowUp />
                                     <KeyboardArrowDown sx={{ mt: '-8px' }} />
@@ -434,7 +532,7 @@ function DragableTable({ checked, handleCheckbox, data }) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {form.length === 0 || form === null ? (
+                    {form?.length === 0 || form === null ? (
                         <TableRow>
                             <TableCell colSpan={5} sx={{
                                 width: '100%', padding: '100px 0', textAlign: 'center',
@@ -444,7 +542,7 @@ function DragableTable({ checked, handleCheckbox, data }) {
                             </TableCell>
                         </TableRow>
                     ) : (
-                        form.map((item, index) => (
+                        form?.map((item, index) => (
                             <TableRow
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, index)}
@@ -458,26 +556,10 @@ function DragableTable({ checked, handleCheckbox, data }) {
                                 <TableCell sx={{ width: '30px' }}>
                                     <DragIndicator sx={{ fontSize: 27, color: '#DDE2E4', cursor: 'grab' }} />
                                 </TableCell>
-                                <TableCell sx={{ width: '80px' }}><MuiCheckbox checked={checked} /> </TableCell>
+                                <TableCell sx={{ width: '80px' }}>{item.id}</TableCell>
                                 <TableCell>{item.name}</TableCell>
-                                <TableCell>
-                                    <Box sx={{ minWidth: 120 }}>
+                                <TableCell>{item.email}</TableCell>
 
-                                        {/* drop down  */}
-                                        <ButtonDropdown
-                                            value={item.status}
-                                            data={dropDowndata}
-                                            onChange={(data) => handleStatusChange(data, index)}
-                                            style={{
-                                                select: {
-                                                    backgroundColor: item.status === 'active' ? '#e1ecfe' : item.status === 'inactive' ? '#fcd6d6' : '#F5F5F5',
-                                                    color: item.status === 'active' ? '#0e5ee1' : item.status === 'inactive' ? '#ef2424' : '#00000'
-                                                },
-                                                root: { width: '100px' }
-                                            }}
-                                        />
-                                    </Box>
-                                </TableCell>
                                 <TableCell align='center' sx={{ width: '80px', 'button': { color: '#252525', 'svg': { fontSize: 20 } } }}>
                                     <Stack direction='row' alignItems='center'>
                                         <IconButton>
@@ -501,28 +583,29 @@ function DragableTable({ checked, handleCheckbox, data }) {
                 <Stack direction='row' gap='5px' alignItems='center'>
                     <FormControl sx={{ '.MuiSelect-select ': { padding: '5px' } }}>
                         <Select
-                            value={perPageValue}
-                            onChange={handlePerPageChange}
+                            value={limit}
+                            onChange={(e) => handlePerPageChange(e.target.value)}
                         >
                             <MenuItem value={10}>10</MenuItem>
                             <MenuItem value={20}>20</MenuItem>
-                            <MenuItem value={30}>30</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
+                            <MenuItem value={100}>100</MenuItem>
                         </Select>
                     </FormControl>
                     <Typography sx={{ color: '#84919A', fontSize: 13, fontWeight: 400 }}>Pages</Typography>
                 </Stack>
                 <Stack direction='row' alignItems='center' gap='3px'>
-                    <IconButton sx={{ p: '3px' }}>
+                    <IconButton disabled={1 === page} onClick={() => handlePagination('prev')} sx={{ p: '3px' }}>
                         <ArrowBackIosNew />
                     </IconButton>
                     <Stack direction='row' alignItems='center' gap='8px'>
-                        <Typography sx={{ color: '#84919A', fontSize: 13, fontWeight: 400 }}>Page 2 of 12</Typography>
+                        <Typography sx={{ color: '#84919A', fontSize: 13, fontWeight: 400 }}>Page {page} of {UserData?.last_page}</Typography>
                         <Stack direction='row' alignItems='center' gap='3px'>
                             <Typography sx={{ color: '#344054', fontSize: 13, fontWeight: 500 }}>Go to page</Typography>
-                            <TextField InputProps={{ defaultValue: 2 }} sx={{ minWidht: 0, 'input': { p: '5px', width: '50px' } }} type='number' />
+                            <TextField InputProps={{ defaultValue: 1 }} sx={{ minWidht: 0, 'input': { p: '5px', width: '50px' } }} onChange={(event) => handleInputPageChagne(event?.target.value)} type='number' />
                         </Stack>
                     </Stack>
-                    <IconButton sx={{ p: '3px' }}>
+                    <IconButton disabled={UserData?.last_page === page} onClick={() => handlePagination('next')} sx={{ p: '3px' }}>
                         <ArrowForwardIos />
                     </IconButton>
                 </Stack>

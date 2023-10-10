@@ -4,7 +4,7 @@ import { InputAdornment, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
 
 
-const StyledTextField = styled(TextField)(({ theme, style }) => ({
+const StyledTextField = styled(TextField)(({  style }) => ({
     width: '100%',
     boxShadow: '0px 4px 16px 0px #417EE31A',
     border: '1px solid #F2F4F7',
@@ -35,7 +35,7 @@ const StyledTextField = styled(TextField)(({ theme, style }) => ({
     // minWidth: '300px',
 }));
 
-function SearchTextField({ width, placeholder, style }) {
+function SearchTextField({  placeholder, style }) {
 
     return (
         <StyledTextField

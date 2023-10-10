@@ -7,7 +7,7 @@ import { IconButton, Stack } from '@mui/material';
 import SearchTextField from '../SearchTextField';
 import {
     StyledButton, StyledBadge, StyledModalContainer, StyledModalHeader,
-    StyledCancelBtn, StyledClearBtn, StyledApplyBtn, StyledFilterChip, StyledMutedText, 
+    StyledCancelBtn, StyledClearBtn, StyledApplyBtn, StyledFilterChip, StyledMutedText,
 } from './FilterStyled';
 function Filter() {
     const [open, setOpen] = React.useState(false);

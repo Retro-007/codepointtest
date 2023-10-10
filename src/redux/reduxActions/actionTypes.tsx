@@ -1,0 +1,7 @@
+export const GET_USERS = "GET_USERS"
+export const NEXT_PAGE = "NEXT_PAGE"
+export const PREV_PAGE = "PREV_PAGE"
+export const GO_TO_PAGE = "GO_TO_PAGE"
+export const PER_PAGE_CHANGE = "PER_PAGE_CHANGE"
+export const SORTFIELDS = "SORTFIELDS"
+export const UPDATE_SORTED_BY = "UPDATE_SORTED_BY"

@@ -1,0 +1,1 @@
+export const API_URL = "https://tmsv4.stagingcp.co/api/machine-test"
